@@ -19,4 +19,5 @@ import "context"
 
 type Check interface {
 	Check(ctx context.Context) (int, error)
+	GetCheckName() string
 }

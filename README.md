@@ -34,3 +34,22 @@ each check needs to have a descriptive name, a function for the check, and a rem
 The Service needs to be interactable through a set of cli commands
 ## High level classes
 **Check scheduler**
+
+
+# Example of how it should be usable by a user
+```Go
+package main
+
+import (
+	"github.com/Lunal98/netwatchdogCore"
+	"github.com/Lunal98/netwatchdogChecks"
+	"examplecheck"
+)
+
+func main() {
+	nwd := netwatchdogCore.New()
+	sqlCheck := exampleCheck.GetSqlCheck()
+	nwd.AddCheck(&sqlCheck)
+
+}
+```

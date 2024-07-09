@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
+package core
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Lunal98/netwatchdog/cmd/check"
@@ -27,7 +28,7 @@ import (
 
 func init() {
 	time.Sleep(time.Second)
-	var check check.Check
+	var check check.InterfaceCheck
 	ctx := context.TODO()
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
@@ -37,5 +38,9 @@ func init() {
 		gocron.DurationJob(30*time.Second),
 		gocron.NewTask(check.Check(ctx)),
 	)
+	if err != nil {
+
+		log.Error().Err(err).Msg(fmt.Sprintf("Error starting job: %d", check.CheckName))
+	}
 
 }
