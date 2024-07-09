@@ -15,10 +15,19 @@ limitations under the License.
 */
 package check
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type InterfaceCheck struct {
-	fthisshit string
+	CheckName string
 }
 
-func (I *InterfaceCheck) Check(ctx context.Context) (int, error)
+func (I *InterfaceCheck) Check(ctx context.Context) error {
+	fmt.Println("Test check has been run")
+	return nil
+}
+func (I *InterfaceCheck) GetCheckName() string {
+	return I.CheckName
+}
