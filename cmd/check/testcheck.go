@@ -25,7 +25,7 @@ type InterfaceCheck struct {
 }
 
 func (I *InterfaceCheck) Check(ctx context.Context) error {
-	fmt.Println("Test check has been run")
+	fmt.Printf("(%s):Test check has been run\n", I.GetCheckName())
 	return nil
 }
 func (I *InterfaceCheck) GetCheckName() string {

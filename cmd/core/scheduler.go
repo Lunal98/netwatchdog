@@ -26,21 +26,46 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func init() {
-	time.Sleep(time.Second)
-	var check check.InterfaceCheck
+func Init() {
+	cf := NewCheckfactory()
+	cf.AddCheck(&check.InterfaceCheck{CheckName: "eth0"})
+	asdasd := check.InterfaceCheck{CheckName: "asd123"}
+	cks := cf.GetAll()
+	for _, check := range cks {
+		fmt.Println(check.GetCheckName())
+	}
 	ctx := context.TODO()
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error starting internal scheduler, exiting")
 	}
-	job, err := scheduler.NewJob(
-		gocron.DurationJob(30*time.Second),
-		gocron.NewTask(check.Check(ctx)),
-	)
-	if err != nil {
+	var jobs []gocron.Job
+	for _, check := range cf.GetAll() {
+		job, err := scheduler.NewJob(
+			gocron.DurationJob(30*time.Second),
+			gocron.NewTask(check.Check, ctx),
+		)
+		if err != nil {
 
-		log.Error().Err(err).Msg(fmt.Sprintf("Error starting job: %d", check.CheckName))
+			log.Error().Err(err).Msg(fmt.Sprintf("Error starting job: %s", check.GetCheckName()))
+		}
+		jobs = append(jobs, job)
+		scheduler.Start()
+		time.Sleep(10 * time.Second)
+		job2, err := scheduler.NewJob(
+			gocron.DurationJob(30*time.Second),
+			gocron.NewTask(asdasd.Check, ctx),
+		)
+		if err != nil {
+
+			log.Error().Err(err).Msg(fmt.Sprintf("Error starting job: %s", check.GetCheckName()))
+		}
+		select {
+		case <-time.After(2 * time.Minute):
+		}
+
+		err = scheduler.Shutdown()
+
 	}
 
 }
