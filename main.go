@@ -15,6 +15,8 @@ limitations under the License.
 */
 package main
 
-func main() {
+import "github.com/Lunal98/netwatchdog/cmd/core"
 
+func main() {
+	core.Init()
 }

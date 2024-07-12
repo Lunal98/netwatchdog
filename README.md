@@ -37,6 +37,7 @@ The Service needs to be interactable through a set of cli commands
 
 
 # Example of how it should be usable by a user
+
 ```Go
 package main
 
@@ -48,8 +49,25 @@ import (
 
 func main() {
 	nwd := netwatchdogCore.New()
-	sqlCheck := exampleCheck.GetSqlCheck()
-	nwd.AddCheck(&sqlCheck)
+	Interface := InterfaceCheck{
+		Interface: "eth0",
+		Priority: 0,
+	}
+	Net := NetworkCheck{
+		Subnet: "192.168.100.0/24",
+		Ping: "8.8.8.8",
+		Priority: 1,
+	}
+	SMB := SMBCheck{
+		Share: "//dmhuftp/Invoices",
+	  //Share: "/mnt/fileserver"
+	  //Share: "auto"
+		Priority: 2,
+	}
+	nwd.AddCheck(Interface,30*time.Second)
+	nwd.AddCheck(Net,30*time.Second)
+	nwd.AddCheck(SMB,30*time.Second)
+	nwd.Start()
 
 }
 ```

@@ -18,6 +18,6 @@ package core
 import "context"
 
 type Check interface {
-	Check(ctx context.Context) (int, error)
+	Check(ctx context.Context) error
 	GetCheckName() string
 }
