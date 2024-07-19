@@ -18,13 +18,61 @@ package core
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Lunal98/netwatchdog/cmd/check"
+	"github.com/google/uuid"
 
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rs/zerolog/log"
 )
+
+type Scheduler struct {
+	context   context.Context
+	scheduler gocron.Scheduler
+	once      sync.Once
+	started   bool
+}
+
+func (s *Scheduler) init() {
+	s.once.Do(func() {
+		var err error
+		s.scheduler, err = gocron.NewScheduler()
+		if err != nil {
+			log.Fatal().Err(err).Msg("Error starting internal scheduler, exiting")
+		}
+		s.started = false
+
+	})
+}
+func (s *Scheduler) Addjob(function any, duration time.Duration) (uuid.UUID, error) {
+	s.init()
+	job, err := s.scheduler.NewJob(
+		gocron.DurationJob(duration),
+		gocron.NewTask(function),
+	)
+	return job.ID(), err
+}
+func (s *Scheduler) SetRemediator(eventListenerFunc func(jobID uuid.UUID, jobName string, err error)) {
+	//gocron.EventListener
+	s.init()
+	gocron.AfterJobRunsWithError(eventListenerFunc)
+}
+func (s *Scheduler) Start() {
+	if s.scheduler == nil {
+		log.Warn().Msg("Scheduler.Start() Was called without it being initialized, See if any checks have been added to it.")
+		return
+	}
+	s.scheduler.Start()
+	s.started = true
+}
+func (s *Scheduler) Stop() {
+	if s.started {
+		s.scheduler.StopJobs()
+	}
+	s.started = false
+}
 
 func Init() {
 	cf := NewCheckfactory()
