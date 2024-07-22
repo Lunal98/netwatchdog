@@ -29,7 +29,6 @@ import (
 )
 
 type Scheduler struct {
-	context   context.Context
 	scheduler gocron.Scheduler
 	once      sync.Once
 	started   bool
@@ -59,15 +58,19 @@ func (s *Scheduler) SetRemediator(eventListenerFunc func(jobID uuid.UUID, jobNam
 	s.init()
 	gocron.AfterJobRunsWithError(eventListenerFunc)
 }
-func (s *Scheduler) Start() {
+func (s *Scheduler) Start(ctx context.Context) {
 	if s.scheduler == nil {
 		log.Warn().Msg("Scheduler.Start() Was called without it being initialized, See if any checks have been added to it.")
 		return
 	}
 	s.scheduler.Start()
 	s.started = true
+
+	<-ctx.Done()
+	s.scheduler.StopJobs()
 }
 func (s *Scheduler) Stop() {
+
 	if s.started {
 		s.scheduler.StopJobs()
 	}

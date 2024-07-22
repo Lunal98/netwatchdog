@@ -3,7 +3,7 @@ package core
 import "sync"
 
 type Checkfactory struct {
-	checks []Check
+	checks []Checker
 }
 
 var checkfactoryInstance *Checkfactory
@@ -23,11 +23,11 @@ func NewCheckfactory() *Checkfactory {
 	return checkfactoryInstance
 }
 
-func (c *Checkfactory) AddCheck(check Check) {
+func (c *Checkfactory) AddCheck(check Checker) {
 	c.checks = append(c.checks, check)
 }
 
 // Method to get all checks from the Checker
-func (c *Checkfactory) GetAll() []Check {
+func (c *Checkfactory) GetAll() []Checker {
 	return c.checks
 }

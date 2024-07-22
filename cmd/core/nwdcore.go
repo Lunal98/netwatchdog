@@ -2,33 +2,43 @@ package core
 
 import (
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 type CheckRoutine struct {
-	check    Check
+	checker  Checker
 	period   time.Duration
 	name     string
 	priority int
+	UUID     uuid.UUID
 }
 
 type NwdCore struct {
-	checks []CheckRoutine
+	checks    []CheckRoutine
+	scheduler Scheduler
 }
 
-func (nwd *NwdCore) AddCheck(check Check, period time.Duration, name string, priority int) error {
+func (nwd *NwdCore) AddCheck(checker Checker, period time.Duration, name string, priority int) error {
+	uuid, err := nwd.scheduler.Addjob(checker.Check, 30*time.Second)
+	if err != nil {
+		log.Error().Err(err).Str("check name", name).Msg("Error Adding Check")
+	}
 	nwd.checks = append(
 		nwd.checks,
 		CheckRoutine{
-			check:    check,
+			checker:  checker,
 			period:   period,
 			name:     name,
 			priority: priority,
+			UUID:     uuid,
 		},
 	)
 	return nil
 
 }
 func (nwd *NwdCore) Start() {
-	var asd Scheduler
+	nwd.scheduler.Start()
 
 }

@@ -15,9 +15,14 @@ limitations under the License.
 */
 package core
 
-import "context"
+import (
+	"context"
 
-type Check interface {
+	"github.com/Lunal98/netwatchdog/cmd/remediationhelper"
+)
+
+type Checker interface {
 	Check(ctx context.Context) error
 	GetCheckName() string
+	Remediate(remhelp remediationhelper.Helper)
 }
