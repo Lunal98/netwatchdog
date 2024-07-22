@@ -18,16 +18,42 @@ package check
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
+	"github.com/Lunal98/netwatchdog/cmd/remediationhelper"
 )
 
 type InterfaceCheck struct {
 	CheckName string
+	counter   int
+	once      sync.Once
 }
 
 func (I *InterfaceCheck) Check(ctx context.Context) error {
+	I.once.Do(func() {
+		I.counter = 5
+	})
+	if I.counter == 0 {
+		return fmt.Errorf("run out of test checks, please purchase a new license to continue")
+	} else {
+		I.counter--
+	}
 	fmt.Printf("(%s):Test check has been run\n", I.GetCheckName())
 	return nil
 }
 func (I *InterfaceCheck) GetCheckName() string {
 	return I.CheckName
+}
+
+func (I *InterfaceCheck) Remediate(remhelp remediationhelper.Helper) {
+	remhelp.ResetInterface()
+	time.Sleep(30 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	err := I.Check(ctx)
+	if err == nil {
+		return
+	}
+	remhelp.Restart()
 }
