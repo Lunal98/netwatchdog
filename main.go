@@ -1,22 +1,45 @@
-/*
-Copyright © 2024 Alex Bedo <alex98hun@gmail.com>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package main
 
-import "github.com/Lunal98/netwatchdog/cmd/core"
+import (
+	"time"
 
-func main() {
-	core.Init()
+	"github.com/Lunal98/netwatchdog/internal/scheduler"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+)
+
+type CheckRoutine struct {
+	checker  Checker
+	period   time.Duration
+	name     string
+	priority int
+	UUID     uuid.UUID
+}
+
+type NwdCore struct {
+	checks    []CheckRoutine
+	scheduler scheduler.Scheduler
+}
+
+func (nwd *NwdCore) AddCheck(checker Checker, period time.Duration, name string, priority int) error {
+	uuid, err := nwd.scheduler.Addjob(checker.Check, 30*time.Second)
+	if err != nil {
+		log.Error().Err(err).Str("check name", name).Msg("Error Adding Check")
+	}
+	nwd.checks = append(
+		nwd.checks,
+		CheckRoutine{
+			checker:  checker,
+			period:   period,
+			name:     name,
+			priority: priority,
+			UUID:     uuid,
+		},
+	)
+	return nil
+
+}
+func (nwd *NwdCore) Start() {
+	nwd.scheduler.Start()
+
 }
