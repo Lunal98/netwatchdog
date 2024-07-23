@@ -13,15 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package core
+package scheduler
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
-	"github.com/Lunal98/netwatchdog/cmd/check"
 	"github.com/google/uuid"
 
 	"github.com/go-co-op/gocron/v2"
@@ -75,39 +73,4 @@ func (s *Scheduler) Stop() {
 		s.scheduler.StopJobs()
 	}
 	s.started = false
-}
-
-func Init() {
-	cf := NewCheckfactory()
-	cf.AddCheck(&check.InterfaceCheck{CheckName: "eth0"})
-	cks := cf.GetAll()
-	for _, check := range cks {
-		fmt.Println(check.GetCheckName())
-	}
-	ctx := context.TODO()
-	scheduler, err := gocron.NewScheduler()
-	if err != nil {
-		log.Fatal().Err(err).Msg("Error starting internal scheduler, exiting")
-	}
-	var jobs []gocron.Job
-	for _, check := range cf.GetAll() {
-		job, err := scheduler.NewJob(
-			gocron.DurationJob(30*time.Second),
-			gocron.NewTask(check.Check, ctx),
-		)
-		if err != nil {
-
-			log.Error().Err(err).Msg(fmt.Sprintf("Error starting job: %s", check.GetCheckName()))
-		}
-		jobs = append(jobs, job)
-		scheduler.Start()
-
-		select {
-		case <-time.After(2 * time.Minute):
-		}
-
-		err = scheduler.Shutdown()
-
-	}
-
 }

@@ -13,12 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package core
+package main
 
 import (
 	"context"
 
-	"github.com/Lunal98/netwatchdog/cmd/remediationhelper"
+	remediationhelper "github.com/Lunal98/netwatchdog/internal/remediation"
 )
 
 type Checker interface {
