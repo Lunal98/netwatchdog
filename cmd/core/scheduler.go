@@ -80,7 +80,6 @@ func (s *Scheduler) Stop() {
 func Init() {
 	cf := NewCheckfactory()
 	cf.AddCheck(&check.InterfaceCheck{CheckName: "eth0"})
-	asdasd := check.InterfaceCheck{CheckName: "asd123"}
 	cks := cf.GetAll()
 	for _, check := range cks {
 		fmt.Println(check.GetCheckName())
@@ -102,15 +101,7 @@ func Init() {
 		}
 		jobs = append(jobs, job)
 		scheduler.Start()
-		time.Sleep(10 * time.Second)
-		job2, err := scheduler.NewJob(
-			gocron.DurationJob(30*time.Second),
-			gocron.NewTask(asdasd.Check, ctx),
-		)
-		if err != nil {
 
-			log.Error().Err(err).Msg(fmt.Sprintf("Error starting job: %s", check.GetCheckName()))
-		}
 		select {
 		case <-time.After(2 * time.Minute):
 		}
