@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	"github.com/Lunal98/netwatchdog/internal/scheduler"
@@ -17,8 +18,9 @@ type CheckRoutine struct {
 }
 
 type NwdCore struct {
-	checks    []CheckRoutine
+	checks    map[uuid.UUID]CheckRoutine
 	scheduler scheduler.Scheduler
+	ctx       context.Context
 }
 
 func (nwd *NwdCore) AddCheck(checker Checker, period time.Duration, name string, priority int) error {
@@ -26,20 +28,17 @@ func (nwd *NwdCore) AddCheck(checker Checker, period time.Duration, name string,
 	if err != nil {
 		log.Error().Err(err).Str("check name", name).Msg("Error Adding Check")
 	}
-	nwd.checks = append(
-		nwd.checks,
-		CheckRoutine{
-			checker:  checker,
-			period:   period,
-			name:     name,
-			priority: priority,
-			UUID:     uuid,
-		},
-	)
+	nwd.checks[uuid] = CheckRoutine{
+		checker:  checker,
+		period:   period,
+		name:     name,
+		priority: priority,
+		UUID:     uuid,
+	}
 	return nil
 
 }
 func (nwd *NwdCore) Start() {
-	nwd.scheduler.Start()
+	nwd.scheduler.Start(nwd.ctx)
 
 }
