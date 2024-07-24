@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	remediationhelper "github.com/Lunal98/netwatchdog/internal/remediation"
+	"github.com/Lunal98/netwatchdog/internal/remediationhelper"
 )
 
 type InterfaceCheck struct {
