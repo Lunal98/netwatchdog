@@ -27,9 +27,10 @@ import (
 )
 
 type Scheduler struct {
-	scheduler gocron.Scheduler
-	once      sync.Once
-	started   bool
+	scheduler   gocron.Scheduler
+	once        sync.Once
+	started     bool
+	failedcheck chan uuid.UUID
 }
 
 func (s *Scheduler) init() {
@@ -40,6 +41,7 @@ func (s *Scheduler) init() {
 			log.Fatal().Err(err).Msg("Error starting internal scheduler, exiting")
 		}
 		s.started = false
+		s.failedcheck = make(chan uuid.UUID)
 
 	})
 }
@@ -56,16 +58,27 @@ func (s *Scheduler) SetRemediator(eventListenerFunc func(jobID uuid.UUID, jobNam
 	s.init()
 	gocron.AfterJobRunsWithError(eventListenerFunc)
 }
-func (s *Scheduler) Start(ctx context.Context) {
+func (s *Scheduler) Start(ctx context.Context) uuid.UUID {
 	if s.scheduler == nil {
 		log.Warn().Msg("Scheduler.Start() Was called without it being initialized, See if any checks have been added to it.")
-		return
+		return uuid.Nil
 	}
+
 	s.scheduler.Start()
 	s.started = true
+	defer s.Stop()
+	for {
 
-	<-ctx.Done()
-	s.scheduler.StopJobs()
+		//var checkuuid uuid.UUID
+		select {
+		case <-ctx.Done():
+			return uuid.Nil
+
+		case checkuuid := <-s.failedcheck:
+			return checkuuid
+		}
+	}
+
 }
 func (s *Scheduler) Stop() {
 
@@ -73,4 +86,8 @@ func (s *Scheduler) Stop() {
 		s.scheduler.StopJobs()
 	}
 	s.started = false
+}
+func (s *Scheduler) handle(jobID uuid.UUID, jobName string, err error) {
+
+	s.failedcheck <- jobID
 }

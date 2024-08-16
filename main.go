@@ -39,6 +39,12 @@ func (nwd *NwdCore) AddCheck(checker Checker, period time.Duration, name string,
 
 }
 func (nwd *NwdCore) Start() {
+	if nwd.ctx == nil {
+		nwd.ctx = context.Background()
+	}
 	nwd.scheduler.Start(nwd.ctx)
+
+}
+func (handler *NwdCore) handle(jobID uuid.UUID, jobName string, err error) {
 
 }
