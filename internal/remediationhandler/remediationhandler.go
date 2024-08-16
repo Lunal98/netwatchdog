@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/Lunal98/netwatchdog/internal/remediationhelper"
+	"github.com/google/uuid"
 )
 
 type remediationhandler struct {
@@ -16,6 +17,6 @@ func (handler *remediationhandler) init() {
 		handler.remediationhelper = remediationhelper.GetDebugHelper()
 	})
 }
-func (handler *remediationhandler) handle() {
+func (handler *remediationhandler) handle(jobID uuid.UUID, jobName string, err error) {
 
 }
