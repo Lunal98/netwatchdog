@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/Lunal98/netwatchdog/internal/checker"
@@ -57,4 +58,34 @@ func (nwd *NwdCore) getCheckers() map[uuid.UUID]checker.Checker {
 		checkers[uuid] = check.checker
 	}
 	return checkers
+}
+func findTopPriority(nwd *NwdCore) uuid.UUID {
+	maxprio := -1
+	var maxpriouuid uuid.UUID
+	lastresult := RunAllChecks(nwd)
+	for uuid, checkR := range nwd.checks {
+		if lastresult[uuid] != nil {
+
+		}
+		if checkR.priority > maxprio {
+			maxpriouuid = uuid
+			maxprio = checkR.priority
+		}
+
+	}
+	return maxpriouuid
+}
+func RunAllChecks(nwd *NwdCore) map[uuid.UUID]error {
+
+	lastresult := make(map[uuid.UUID]error)
+	var wg sync.WaitGroup
+	for uuid, checkR := range nwd.checks {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			lastresult[uuid] = checkR.checker.Check(nwd.ctx)
+		}()
+	}
+	wg.Wait()
+	return lastresult
 }

@@ -26,6 +26,3 @@ func Handle(jobID uuid.UUID, jobName string, err error, checkers map[uuid.UUID]c
 	remhelp := remediationhelper.GetDebugHelper()
 
 }
-func getHighestPriorityError() {
-
-}
