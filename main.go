@@ -1,4 +1,4 @@
-package main
+package nwd
 
 import (
 	"context"
@@ -45,7 +45,6 @@ func (nwd *NwdCore) Start() {
 	if nwd.ctx == nil {
 		nwd.ctx = context.Background()
 	}
-	nwd.scheduler.SetRemediator(nwd.handle)
 	nwd.scheduler.Start(nwd.ctx)
 
 }

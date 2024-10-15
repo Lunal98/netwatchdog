@@ -31,7 +31,6 @@ type Scheduler struct {
 	once        sync.Once
 	started     bool
 	failedcheck chan uuid.UUID
-	handler     func(jobID uuid.UUID, jobName string, err error)
 }
 
 func (s *Scheduler) init() {
@@ -43,7 +42,6 @@ func (s *Scheduler) init() {
 		}
 		s.started = false
 		s.failedcheck = make(chan uuid.UUID)
-		gocron.AfterJobRunsWithError(s.handle)
 
 	})
 }
@@ -54,12 +52,6 @@ func (s *Scheduler) Addjob(function any, duration time.Duration) (uuid.UUID, err
 		gocron.NewTask(function),
 	)
 	return job.ID(), err
-}
-func (s *Scheduler) SetRemediator(eventListenerFunc func(jobID uuid.UUID, jobName string, err error)) {
-	//gocron.EventListener
-	s.init()
-	s.handler = eventListenerFunc
-
 }
 func (s *Scheduler) Start(ctx context.Context) uuid.UUID {
 	if s.scheduler == nil {
@@ -89,10 +81,4 @@ func (s *Scheduler) Stop() {
 		s.scheduler.StopJobs()
 	}
 	s.started = false
-}
-func (s *Scheduler) handle(jobID uuid.UUID, jobName string, err error) {
-	s.failedcheck <- jobID
-	if s.handler != nil {
-		s.handler(jobID, jobName, err)
-	}
 }
