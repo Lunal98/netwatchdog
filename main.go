@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Lunal98/netwatchdog/internal/checker"
-	"github.com/Lunal98/netwatchdog/internal/remediationhandler"
+	"github.com/Lunal98/netwatchdog/internal/remediationhelper"
 	"github.com/Lunal98/netwatchdog/internal/scheduler"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -45,11 +45,27 @@ func (nwd *NwdCore) Start() {
 	if nwd.ctx == nil {
 		nwd.ctx = context.Background()
 	}
-	nwd.scheduler.Start(nwd.ctx)
+	for {
+		checkid := nwd.scheduler.Start(nwd.ctx)
+		if checkid == uuid.Nil {
+			log.Info().Msg("context is done, exiting normally")
+			return
+		}
+		nwd.remediatefault()
+
+	}
 
 }
-func (nwd *NwdCore) handle(jobID uuid.UUID, jobName string, err error) {
-	remediationhandler.Handle(jobID, jobName, err, nwd.getCheckers())
+func (nwd *NwdCore) remediatefault() {
+	checks := nwd.getCheckers()
+	for {
+		primaryfault := findTopPriority(nwd)
+		if primaryfault == uuid.Nil {
+			return
+		}
+		checks[primaryfault].Remediate(remediationhelper.GetDebugHelper())
+
+	}
 }
 func (nwd *NwdCore) getCheckers() map[uuid.UUID]checker.Checker {
 	checkers := make(map[uuid.UUID]checker.Checker)
@@ -62,6 +78,9 @@ func findTopPriority(nwd *NwdCore) uuid.UUID {
 	maxprio := -1
 	var maxpriouuid uuid.UUID
 	lastresult := RunAllChecks(nwd)
+	if len(lastresult) == 0 {
+		return uuid.Nil
+	}
 	for uuid, checkR := range nwd.checks {
 		if lastresult[uuid] != nil {
 
