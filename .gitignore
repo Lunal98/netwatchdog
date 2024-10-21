@@ -21,3 +21,5 @@ netwatchdog
 # Go workspace file
 go.work
 go.work.sum
+
+test.go
