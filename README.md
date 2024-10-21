@@ -1,9 +1,10 @@
 # netwatchdog
-monitor connection of headless linux devices and attempt to automatically remediate issues
 
-# What it needs to accomplish
+netwatchdog is a library designed to help creating watchdogs, that monitor network access, network folder mountings, and similar conditions, to help headless devices stay connected and available.
 
-It needs to loops through a set of steps and attempt to remediate any given faults, as well as make debugging faults that may not be remediated by the software.
+# Goals / TODO
+
+It needs to loops through a set of checks and attempt to remediate any given faults, as well as make debugging faults that may not be remediated by the software easier.
 ## monitoring loop
 - check the interfaces
 - check network access
@@ -32,8 +33,6 @@ each check needs to have a descriptive name, a function for the check, and a rem
 ## CLI
 
 The Service needs to be interactable through a set of cli commands
-## High level classes
-**Check scheduler**
 
 
 # Example of how it should be usable by a user
@@ -42,13 +41,11 @@ The Service needs to be interactable through a set of cli commands
 package main
 
 import (
-	"github.com/Lunal98/netwatchdogCore"
-	"github.com/Lunal98/netwatchdogChecks"
-	"examplecheck"
+	"nwdtest/vendor/netwatchdog"
 )
 
 func main() {
-	nwd := netwatchdogCore.New()
+	var nwd netwatchdog.NwdCore
 	Interface := InterfaceCheck{
 		Interface: "eth0",
 		Priority: 0,
@@ -59,14 +56,14 @@ func main() {
 		Priority: 1,
 	}
 	SMB := SMBCheck{
-		Share: "//dmhuftp/Invoices",
+		Share: "//mnt/fileserver",
 	  //Share: "/mnt/fileserver"
 	  //Share: "auto"
 		Priority: 2,
 	}
-	nwd.AddCheck(Interface,30*time.Second)
-	nwd.AddCheck(Net,30*time.Second)
-	nwd.AddCheck(SMB,30*time.Second)
+	nwd.AddCheck(&Interface,30*time.Second,"eth0 NIC",3)
+	nwd.AddCheck(&Net,30*time.Second,"IPCheck",2)
+	nwd.AddCheck(&SMB,30*time.Second,"SMB",1)
 	nwd.Start()
 
 }
